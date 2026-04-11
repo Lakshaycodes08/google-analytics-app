@@ -65,21 +65,19 @@ export default async function authRoutes(server: FastifyInstance) {
 
             // Upsert user — matches actual DB schema
             const query = `
-                INSERT INTO users (firebase_uid, email, display_name, photo_url, google_refresh_token)
-                VALUES (?, ?, ?, ?, ?)
+                INSERT INTO users (firebase_uid, email, display_name, photo_url)
+                VALUES (?, ?, ?, ?)
                 ON DUPLICATE KEY UPDATE
                     email                = VALUES(email),
                     display_name         = VALUES(display_name),
-                    photo_url            = VALUES(photo_url),
-                    google_refresh_token = COALESCE(VALUES(google_refresh_token), google_refresh_token)
+                    photo_url            = VALUES(photo_url)
             `;
 
             await pool.execute(query, [
                 firebaseUser.localId,
                 firebaseUser.email,
                 firebaseUser.displayName || null,
-                firebaseUser.photoUrl || null,
-                refreshToken || null
+                firebaseUser.photoUrl || null
             ]);
 
             // Get internal DB user id
