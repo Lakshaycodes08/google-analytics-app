@@ -58,6 +58,7 @@ async function isProAccess(request: any, reply: any) {
 }
 
 export default async function gaRoutes(server: FastifyInstance) {
+    const FRONTEND_URL = process.env.FRONTEND_URL || "http://localhost:3000";
 
     server.get("/ga/properties", async (request, reply) => {
         try {
@@ -377,7 +378,7 @@ export default async function gaRoutes(server: FastifyInstance) {
 
             const params = new URLSearchParams({
                 client_id: process.env.GOOGLE_CLIENT_ID || "",
-                redirect_uri: `${process.env.FRONTEND_URL}/api/ga/oauth/callback`,
+                redirect_uri: `${FRONTEND_URL}/api/ga/oauth/callback`,
                 response_type: "code",
                 scope: [
                     "https://www.googleapis.com/auth/analytics.readonly",
@@ -385,17 +386,18 @@ export default async function gaRoutes(server: FastifyInstance) {
                 ].join(" "),
                 access_type: "offline",
                 prompt: "consent",
+                state: request.cookies.token || "",
             });
 
             return reply.redirect(`https://accounts.google.com/o/oauth2/v2/auth?${params}`);
         } catch (err) {
-            return reply.redirect(`${process.env.FRONTEND_URL}/login`);
+            return reply.redirect(`${FRONTEND_URL}/login`);
         }
     });
 
     server.get("/ga/oauth/callback", async (request, reply) => {
         try {
-            const { code } = request.query as { code: string };
+            const { code, state } = request.query as { code?: string, state?: string };
             if (!code) return reply.status(400).send({ error: "Missing code" });
 
             const tokenRes = await fetch("https://oauth2.googleapis.com/token", {
@@ -405,7 +407,7 @@ export default async function gaRoutes(server: FastifyInstance) {
                     code,
                     client_id: process.env.GOOGLE_CLIENT_ID || "",
                     client_secret: process.env.GOOGLE_CLIENT_SECRET || "",
-                    redirect_uri: `${process.env.FRONTEND_URL}/api/ga/oauth/callback`,
+                    redirect_uri: `${FRONTEND_URL}/api/ga/oauth/callback`,
                     grant_type: "authorization_code",
                 }).toString(),
             });
@@ -413,11 +415,21 @@ export default async function gaRoutes(server: FastifyInstance) {
             const tokens = await tokenRes.json() as any;
             if (!tokenRes.ok) {
                 server.log.error(tokens, "OAuth token exchange failed");
-                return reply.redirect(`${process.env.FRONTEND_URL}/dashboard?oauth=error`);
+                return reply.redirect(`${FRONTEND_URL}/dashboard?oauth=error`);
             }
 
-            await request.jwtVerify({ onlyCookie: true });
-            const user = request.user as { db_id: number };
+            let user: any;
+            try {
+                if (state) {
+                    user = server.jwt.verify(state);
+                } else {
+                    user = await request.jwtVerify({ onlyCookie: true });
+                }
+            } catch (err) {
+                server.log.error(err, "JWT verification failed in callback");
+                return reply.redirect(`${FRONTEND_URL}/dashboard?oauth=error`);
+            }
+            
             const pool = getPool();
             
             if (tokens.refresh_token) {
@@ -427,19 +439,21 @@ export default async function gaRoutes(server: FastifyInstance) {
                 );
             }
 
+            const isProd = process.env.NODE_ENV === "production";
+
             return reply
-                .setCookie("google_access_token", tokens.access_token, {
-                    domain: process.env.NODE_ENV === "production" ? ".statsy.in" : undefined,
+                .setCookie("google_access_token", tokens.access_token || "", {
+                    domain: isProd ? ".statsy.in" : undefined,
                     path: "/",
                     httpOnly: true,
-                    secure: true,
-                    sameSite: "none",
+                    secure: isProd,
+                    sameSite: isProd ? "none" : "lax",
                     maxAge: 55 * 60,
                 })
-                .redirect(`${process.env.FRONTEND_URL}/dashboard?oauth=success`);
+                .redirect(`${FRONTEND_URL}/dashboard?oauth=success`);
         } catch (err) {
             server.log.error(err);
-            return reply.redirect(`${process.env.FRONTEND_URL}/dashboard?oauth=error`);
+            return reply.redirect(`${FRONTEND_URL}/dashboard?oauth=error`);
         }
     });
 

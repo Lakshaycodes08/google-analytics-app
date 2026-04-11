@@ -89,12 +89,13 @@ export async function getOrRefreshAccessToken(
         }
 
         // ── 5. Set cookie so next request is instant ─────────
+        const isProd = process.env.NODE_ENV === "production";
         reply.setCookie("google_access_token", newAccessToken, {
-            domain: process.env.NODE_ENV === "production" ? ".statsy.in" : undefined,
+            domain: isProd ? ".statsy.in" : undefined,
             path: "/",
-            secure: true,
+            secure: isProd,
             httpOnly: true,
-            sameSite: "none",
+            sameSite: isProd ? "none" : "lax",
             maxAge: 55 * 60,
         });
 

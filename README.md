@@ -1,6 +1,6 @@
-# SwytchAnalytics
+# swytchcode-google-analytics (statsy.in)
 
-A modern Google Analytics dashboard built with **Next.js 15**, **TypeScript**, and **Tailwind CSS**. Powered by [SwytchCode CLI](https://github.com/Lakshaycodes08).
+A modern Google Analytics dashboard built with **Next.js 15**, **TypeScript**, and **Tailwind CSS**. Powered by [SwytchCode CLI](https://cli.swytchcode.com).
 
 ![Next.js](https://img.shields.io/badge/Next.js-15-black?logo=next.js)
 ![TypeScript](https://img.shields.io/badge/TypeScript-5-blue?logo=typescript)
@@ -39,8 +39,8 @@ A modern Google Analytics dashboard built with **Next.js 15**, **TypeScript**, a
 
 ```bash
 # Clone the repository
-git clone https://github.com/Lakshaycodes08/google-analytics-app.git
-cd google-analytics-app
+git clone https://github.com/swytchcodehq/swytchcode-google-analytics.git
+cd swytchcode-google-analytics
 
 # Install dependencies
 npm install
