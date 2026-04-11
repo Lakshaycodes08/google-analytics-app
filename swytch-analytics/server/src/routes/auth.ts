@@ -137,16 +137,18 @@ export default async function authRoutes(server: FastifyInstance) {
     });
 
     server.delete("/auth", async (request, reply) => {
+        const isProd = process.env.NODE_ENV === "production";
         return reply
             .clearCookie("token", {
                 path: "/",
-                secure: process.env.NODE_ENV === "production",
+                secure: isProd,
                 sameSite: "lax",
             })
             .clearCookie("google_access_token", {
+                domain: isProd ? ".statsy.in" : undefined,
                 path: "/",
-                secure: process.env.NODE_ENV === "production",
-                sameSite: "lax",
+                secure: isProd,
+                sameSite: isProd ? "none" : "lax",
             })
             .send({ success: true });
     });

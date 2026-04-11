@@ -1,20 +1,29 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import Navbar from "@/components/layout/Navbar";
 import Input from "@/components/ui/Input";
 import Button from "@/components/ui/Button";
 import Toast from "@/components/ui/Toast";
-import { Bell, User, AlertTriangle } from "lucide-react";
+import { Bell, UserIcon, AlertTriangle } from "lucide-react"; // Import UserIcon instead of User to avoid conflict
+import { useAuth } from "@/hooks/useAuth";
 
 const frequencies = ["Daily", "Weekly", "Biweekly", "Monthly"];
 
 export default function SettingsPage() {
-    const [email, setEmail] = useState("user@example.com");
-    const [name, setName] = useState("John Doe");
+    const { user } = useAuth();
+    const [email, setEmail] = useState("");
+    const [name, setName] = useState("");
     const [frequency, setFrequency] = useState("Weekly");
     const [showToast, setShowToast] = useState(false);
+
+    useEffect(() => {
+        if (user) {
+            setEmail(user.email || "");
+            setName(user.displayName || localStorage.getItem("user_name") || "User");
+        }
+    }, [user]);
 
     const handleSave = () => {
         setShowToast(true);
@@ -43,7 +52,7 @@ export default function SettingsPage() {
                     <div className="bg-white rounded-2xl border border-[#E5E0D8] p-6 mb-4 card-hover">
                         <div className="flex items-center gap-2 mb-5">
                             <div className="w-7 h-7 rounded-lg bg-[#1B3A6B]/10 flex items-center justify-center">
-                                <User size={14} className="text-[#1B3A6B]" />
+                                <UserIcon size={14} className="text-[#1B3A6B]" />
                             </div>
                             <h2 className="text-sm font-semibold text-[#1A1814]">Profile</h2>
                         </div>
