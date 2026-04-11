@@ -12,7 +12,7 @@ export async function apiRequest(
     const res = await fetch(`${fullPath}`, {
         credentials: "include",
         headers: {
-            "Content-Type": "application/json",
+            ...(options?.body ? { "Content-Type": "application/json" } : {}),
             ...(options?.headers ?? {}),
         },
         ...options,

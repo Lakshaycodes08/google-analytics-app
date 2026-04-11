@@ -124,13 +124,6 @@ export default async function authRoutes(server: FastifyInstance) {
                     path: "/",
                     maxAge: 60 * 60 * 24 * 7,
                 })
-                .setCookie("google_access_token", accessToken || "", {
-                    httpOnly: true,
-                    secure: process.env.NODE_ENV === "production",
-                    sameSite: "lax",
-                    path: "/",
-                    maxAge: 60 * 60 * 24 * 7,
-                })
                 .send({ success: true });
 
         } catch (err) {
