@@ -503,7 +503,7 @@ export default function LandingPage() {
             </p>
 
             {/* Buttons — your existing ones, untouched */}
-            <div className="flex items-center justify-center gap-10 fade-up fade-up-delay-3">
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-10 fade-up fade-up-delay-3">
               <Link href="/login">
                 <button className="
                   relative overflow-hidden
