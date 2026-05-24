@@ -9,7 +9,7 @@ export async function apiRequest(
     // Prepend /api if not already present
     const fullPath = path.startsWith("/api") ? path : `/api${path}`;
 
-    const res = await fetch(`${fullPath}`, {
+    const res = await fetch(`${BASE}${fullPath}`, {
         credentials: "include",
         headers: {
             ...(options?.body ? { "Content-Type": "application/json" } : {}),
